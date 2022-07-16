@@ -82,6 +82,40 @@ void SeqString::remove(int start, int num) {
     data[len] = '\0';
 }
 
+int SeqString::find(const SeqString& s) const {
+    int* p = new int[s.len];
+    int i, j;
+
+    //生成失效函数
+    p[0] = -1;
+    for (i = 1; i < s.len; ++i) {
+        j = i - 1;
+        while (j >= 0 && s.data[p[j] + 1] != s.data[i])
+            j = p[j];
+        if (j < 0)
+            p[i] = -1;
+        else
+            p[i] = p[j] + 1;
+    }
+
+    //查找
+    i = j = 0;
+    while (i < len && j < s.len) {
+        if (data[i] == s.data[j]) {
+            j++;
+            i++;
+        } else if (j == 0)
+            i++;
+        else
+            j = p[j - 1] + 1;
+    }
+    delete[] p;
+    if (j == s.len)
+        return i - j;
+    else
+        return -1;
+}
+
 SeqString operator+(const SeqString& s1, const SeqString& s2) {
     SeqString tpl;
     tpl.len = s1.len + s2.len;
@@ -90,7 +124,7 @@ SeqString operator+(const SeqString& s1, const SeqString& s2) {
     for (i = 0; i < s1.len; i++)
         tpl.data[i] = s1.data[i];
     for (i = 0; i < s2.len; i++)
-        tpl.data[i] = s2.data[i];
+        tpl.data[i + s1.len] = s2.data[i];
     tpl.data[tpl.len] = '\0';
     return tpl;
 }

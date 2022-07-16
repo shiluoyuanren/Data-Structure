@@ -26,6 +26,7 @@ class SeqString {
     SeqString subStr(int start, int num) const;
     void insert(int start, const SeqString& s);
     void remove(int start, int num);
+    int find(const SeqString& s) const;
 };
 
 #endif
