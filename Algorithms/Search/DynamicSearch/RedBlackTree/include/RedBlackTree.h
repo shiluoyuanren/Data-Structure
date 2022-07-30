@@ -226,13 +226,6 @@ void RedBlackTree<KEY, OTHER>::removeAdjust(RedBlackNode*& p,
                                             const KEY& del) {
     if (c->colour == RED)
         return;
-    // if (c == root) {
-    //     if (c->left && c->right && c->left->colour == c->right->colour) {
-    //         c->colour = RED;
-    //         c->left->colour = c->right->colour = BLACK;
-    //         return;
-    //     }
-    // }
     if ((c->left == NULL || c->left && c->left->colour) &&
         (c->right == NULL || c->right && c->right->colour)) {
         if ((t->left == NULL || t->left && t->left->colour) &&
@@ -263,6 +256,7 @@ void RedBlackTree<KEY, OTHER>::removeAdjust(RedBlackNode*& p,
             if (c->left && c->right) {
                 if (c->right->colour == BLACK) {
                     LL(c);
+                    p = c;
                     c = c->right;
                 }
                 return;
