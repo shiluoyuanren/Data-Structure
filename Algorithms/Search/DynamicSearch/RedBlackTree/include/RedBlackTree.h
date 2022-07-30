@@ -13,7 +13,7 @@ class dynamicSearchTable {
     virtual ~dynamicSearchTable() {}
     virtual SET<KEY, OTHER>* find(const KEY& value) const = 0;
     virtual void insert(const SET<KEY, OTHER>& x) = 0;
-    // virtual void remove(const KEY& value) = 0;
+    virtual void remove(const KEY& value) = 0;
 };
 
 template <class KEY, class OTHER>
