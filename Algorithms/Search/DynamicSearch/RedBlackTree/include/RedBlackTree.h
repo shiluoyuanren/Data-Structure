@@ -48,7 +48,7 @@ class RedBlackTree : public dynamicSearchTable<KEY, OTHER> {
     void removeAdjust(RedBlackNode*& p,
                       RedBlackNode*& c,
                       RedBlackNode*& t,
-                      KEY& del);
+                      const KEY& del);
     void LL(RedBlackNode* gp);
     void LR(RedBlackNode* gp);
     void RL(RedBlackNode* gp);
@@ -223,7 +223,7 @@ template <class KEY, class OTHER>
 void RedBlackTree<KEY, OTHER>::removeAdjust(RedBlackNode*& p,
                                             RedBlackNode*& c,
                                             RedBlackNode*& t,
-                                            KEY& del) {
+                                            const KEY& del) {
     if (c->colour == RED)
         return;
     // if (c == root) {
