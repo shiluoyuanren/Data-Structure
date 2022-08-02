@@ -16,7 +16,7 @@ int main() {
         s.insert(a[i]);
     cout << "the content of s: ";
     for (p = s.begin(); p != s.end(); p++)
-        cout << *p << ' ';
+        cout << *p << " ";
 
     cout << "\nfind(18):" << *(s.find(18)) << endl;
 
