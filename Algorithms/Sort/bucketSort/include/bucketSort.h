@@ -36,6 +36,8 @@ void bucketSort(SET<int, OTHER> a[], int size) {
                 a[m++] = bucket[j]->at(k++);  //重构a[]数组
         }
         base *= 10;
+        for (j = 0; j < 10; j++)
+            delete bucket[j];  //清空口袋
     }
 }
 
