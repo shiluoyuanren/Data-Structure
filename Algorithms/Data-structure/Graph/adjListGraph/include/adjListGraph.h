@@ -2,6 +2,7 @@
 #define _ADJLISTGRAPH_H
 
 #include <iostream>
+#include <queue>
 
 template <class TypeOfVer, class TypeOfEdge>
 class graph {
@@ -27,6 +28,8 @@ class adjListGraph : public graph<TypeOfVer, TypeOfEdge> {
     void insert(const TypeOfVer& x, const TypeOfVer& y, const TypeOfEdge& w);
     void remove(const TypeOfVer& x, const TypeOfVer& y);
     bool exist(const TypeOfVer& x, const TypeOfVer& y) const;
+    void dfs() const;  //深度优先搜索
+    void bfs() const;  //广度优先搜索
 
    private:
     struct edgeNode {
@@ -51,7 +54,71 @@ class adjListGraph : public graph<TypeOfVer, TypeOfEdge> {
             if (verList[i].ver == x)
                 return i;
     }
+    void dfs(int start, bool visited[]) const;
 };
+
+template <class TypeOfVer, class TypeOfEdge>
+void adjListGraph<TypeOfVer, TypeOfEdge>::bfs() const {
+    int i;
+    std::queue<int> q;  //保存当前访问节点
+    bool* visited = new bool[this->Vers];
+
+    for (i = 0; i < this->Vers; ++i)
+        visited[i] = false;
+
+    std::cout << "当前图的广度优先遍历序列为:\n";
+    for (i = 0; i < this->Vers; ++i) {
+        if (visited[i] == true)
+            continue;
+        q.push(i);
+        while (!q.empty()) {
+            int tpl = q.front();
+            if (visited[tpl] == false) {
+                std::cout << verList[tpl].ver << " ";
+                visited[tpl] = true;
+            }
+            q.pop();
+            edgeNode* p = verList[tpl].head;
+            while (p) {
+                if (visited[p->end] == false)
+                    q.push(p->end);
+                p = p->next;
+            }
+        }
+        std::cout << std::endl;
+    }
+}
+
+template <class TypeOfVer, class TypeOfEdge>
+void adjListGraph<TypeOfVer, TypeOfEdge>::dfs() const {
+    int i;
+    bool* visited = new bool[this->Vers];
+
+    for (i = 0; i < this->Vers; ++i)
+        visited[i] = false;
+
+    std::cout << "当前图的深度优先遍历序列为:\n";
+    for (i = 0; i < this->Vers; ++i) {
+        if (visited[i] == true)
+            continue;
+        dfs(i, visited);  //深度搜索当前的节点
+        std::cout << std::endl;
+    }
+}
+
+template <class TypeOfVer, class TypeOfEdge>
+void adjListGraph<TypeOfVer, TypeOfEdge>::dfs(int start, bool visited[]) const {
+    edgeNode* p = verList[start].head;
+
+    std::cout << verList[start].ver << " ";
+    visited[start] = true;
+
+    while (p) {
+        if (visited[p->end] == false)
+            dfs(p->end, visited);
+        p = p->next;
+    }
+}
 
 template <class TypeOfVer, class TypeOfEdge>
 adjListGraph<TypeOfVer, TypeOfEdge>::adjListGraph(int vSize,
