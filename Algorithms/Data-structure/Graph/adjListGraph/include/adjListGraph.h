@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <queue>
+#include "DisjointSet.h"
 
 template <class TypeOfVer, class TypeOfEdge>
 class graph {
@@ -30,6 +31,9 @@ class adjListGraph : public graph<TypeOfVer, TypeOfEdge> {
     bool exist(const TypeOfVer& x, const TypeOfVer& y) const;
     void dfs() const;  //深度优先搜索
     void bfs() const;  //广度优先搜索
+    //求加权无向连通图的最小生成树
+    void kruskal() const;                       // Kruskal算法
+    void prim(const TypeOfEdge& noEdge) const;  // Prim算法
 
    private:
     struct edgeNode {
@@ -48,6 +52,13 @@ class adjListGraph : public graph<TypeOfVer, TypeOfEdge> {
         verNode() : head(NULL) {}
     };
 
+    //边的类型
+    struct edge {
+        int beg, end;
+        TypeOfEdge w;
+        bool operator>(const edge& rp) const { return w > rp.w; }
+    };
+
     verNode* verList;
     int find(const TypeOfVer& x) const {
         for (int i = 0; i < this->Vers; ++i)
@@ -56,6 +67,82 @@ class adjListGraph : public graph<TypeOfVer, TypeOfEdge> {
     }
     void dfs(int start, bool visited[]) const;
 };
+
+template <class TypeOfVer, class TypeOfEdge>
+void adjListGraph<TypeOfVer, TypeOfEdge>::prim(const TypeOfEdge& noEdge) const {
+    int i, j, start;
+    TypeOfEdge min;
+    //保存节点是否在生成树中
+    bool* flag = new bool[this->Vers];
+    //到节点i的边的最小权值
+    TypeOfEdge* lowCost = new TypeOfEdge[this->Vers];
+    //从哪一个节点到节点i的权值是lowCost[i]
+    int* startNode = new int[this->Vers];
+
+    for (i = 0; i < this->Vers; ++i) {
+        flag[i] = false;
+        lowCost[i] = noEdge;
+    }
+
+    start = 0;  // 0作为第一个加入生成树的节点
+    std::cout << "此图的最小生成树为:\n";
+    for (i = 1; i < this->Vers; ++i) {
+        edgeNode* p = verList[start].head;
+        while (p) {
+            if (flag[p->end] == false && p->weight < lowCost[p->end]) {
+                lowCost[p->end] = p->weight;
+                startNode[p->end] = start;
+            }
+            p = p->next;
+        }
+        flag[start] = true;
+        min = noEdge;
+        for (j = 0; j < this->Vers; ++j)
+            if (lowCost[j] < min) {
+                min = lowCost[j];
+                start = j;
+            }
+        std::cout << "(" << verList[startNode[start]].ver << ","
+                  << verList[start].ver << ") ";
+        lowCost[start] = noEdge;  //边的权值设为无穷大,表示不考虑这个节点
+    }
+    std::cout << std::endl;
+    delete[] flag;
+    delete[] lowCost;
+    delete[] startNode;
+}
+
+template <class TypeOfVer, class TypeOfEdge>
+void adjListGraph<TypeOfVer, TypeOfEdge>::kruskal() const {
+    DisjointSet d(this->Vers);
+    std::priority_queue<edge, std::vector<edge>, std::greater<edge>> q;
+    int i;
+    edgeNode* p;
+    edge e;
+
+    //将所有的边入队,注意不可重复
+    for (i = 0; i < this->Vers; ++i)
+        for (p = verList[i].head; p != NULL; p = p->next)
+            if (i < p->end) {
+                e.beg = i;
+                e.end = p->end;
+                e.w = p->weight;
+                q.push(e);
+            }
+
+    std::cout << "此图的最小生成树为:\n";
+    for (i = 1; i < this->Vers;) {
+        e = q.top();
+        q.pop();
+        if (d.Find(e.beg) != d.Find(e.end)) {
+            std::cout << "(" << verList[e.beg].ver << "," << verList[e.end].ver
+                      << ") ";
+            d.Union(e.beg, e.end);
+            ++i;
+        }
+    }
+    std::cout << std::endl;
+}
 
 template <class TypeOfVer, class TypeOfEdge>
 void adjListGraph<TypeOfVer, TypeOfEdge>::bfs() const {
@@ -152,6 +239,8 @@ void adjListGraph<TypeOfVer, TypeOfEdge>::insert(const TypeOfVer& x,
     int u = find(x), v = find(y);
     if (!exist(x, y)) {
         verList[u].head = new edgeNode(v, w, verList[u].head);
+        //无向图添加此项
+        verList[v].head = new edgeNode(u, w, verList[v].head);
         ++this->Edges;
     }
 }
@@ -168,15 +257,26 @@ void adjListGraph<TypeOfVer, TypeOfEdge>::remove(const TypeOfVer& x,
     if (p->end == v) {
         verList[u].head = p->next;
         delete p;
-        --this->Edges;
     } else {
         while (p->next->end != v)
             p = p->next;
         edgeNode* tpl = p->next;
         p = tpl->next;
         delete tpl;
-        --this->Edges;
     }
+    //无向图添加此项
+    edgeNode* q = verList[v].head;
+    if (q->end == u) {
+        verList[v].head = q->next;
+        delete q;
+    } else {
+        while (q->next->end != u)
+            q = q->next;
+        edgeNode* tpl = q->next;
+        q = tpl->next;
+        delete tpl;
+    }
+    --this->Edges;
 }
 
 template <class TypeOfVer, class TypeOfEdge>
