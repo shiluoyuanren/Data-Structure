@@ -40,7 +40,8 @@ class adjListGraph : public graph<TypeOfVer, TypeOfEdge> {
                                  const TypeOfEdge& noEdge) const;
     //加权图的最短路径
     void dijkstra(const TypeOfVer& start, const TypeOfEdge& noEdge) const;
-    void topSort() const;  //拓扑排序
+    void topSort() const;       //拓扑排序
+    void criticalPath() const;  //关键路径
 
    private:
     struct edgeNode {
@@ -77,8 +78,65 @@ class adjListGraph : public graph<TypeOfVer, TypeOfEdge> {
 };
 
 template <class TypeOfVer, class TypeOfEdge>
+void adjListGraph<TypeOfVer, TypeOfEdge>::criticalPath() const {
+    //同样是一个有向无环图,AOE网络,边表示活动
+    TypeOfEdge *ee = new TypeOfEdge[this->Vers],
+               *le = new TypeOfEdge[this->Vers];
+    int *top = new int[this->Vers], *inDegree = new int[this->Vers];
+    int i;
+    edgeNode* p;
+    std::queue<int> q;
+
+    // top保存拓扑序列
+    for (i = 0; i < this->Vers; ++i)
+        inDegree[i] = 0;
+    for (i = 0; i < this->Vers; ++i)
+        for (p = verList[i].head; p != NULL; p = p->next)
+            ++inDegree[p->end];
+    for (i = 0; i < this->Vers; ++i)
+        if (inDegree[i] == 0) {
+            q.push(i);
+            break;
+        }
+    i = 0;
+    while (!q.empty()) {
+        top[i] = q.front();
+        q.pop();
+        for (p = verList[top[i]].head; p != NULL; p = p->next)
+            if (--inDegree[p->end] == 0)
+                q.push(p->end);
+        ++i;
+    }
+
+    //找最早发生时间
+    for (i = 0; i < this->Vers; ++i)
+        ee[i] = 0;
+    for (i = 0; i < this->Vers; ++i)
+        for (p = verList[top[i]].head; p != NULL; p = p->next)
+            if (ee[top[i]] + p->weight > ee[p->end])
+                ee[p->end] = ee[top[i]] + p->weight;
+
+    //找最迟发生时间
+    for (i = 0; i < this->Vers; ++i)
+        le[i] = ee[top[this->Vers - 1]];
+    //注意从后往前找!由后继的最迟时间确定当前的
+    for (i = this->Vers - 1; i >= 0; --i)
+        for (p = verList[top[i]].head; p != NULL; p = p->next)
+            if (le[p->end] - p->weight < le[top[i]])
+                le[top[i]] = le[p->end] - p->weight;
+
+    //找出关键路径
+    for (i = 0; i < this->Vers; ++i)
+        if (le[top[i]] == ee[top[i]])
+            std::cout << "(" << verList[top[i]].ver << "," << ee[top[i]]
+                      << ") ";
+    std::cout << std::endl;
+}
+
+template <class TypeOfVer, class TypeOfEdge>
 void adjListGraph<TypeOfVer, TypeOfEdge>::topSort() const {
     //实质是广度优先搜索,注意只有有向无环图才有拓扑序列!
+    // AOV网络,点表示活动
     std::queue<int> q;
     int u, i;
     edgeNode* p;

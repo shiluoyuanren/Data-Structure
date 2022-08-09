@@ -31,6 +31,8 @@ int main() {
     g.dijkstra(1, 235);
     cout << "\n----------拓扑排序----------" << endl;
     g.topSort();
+    cout << "\n----------关键路径----------" << endl;
+    g.criticalPath();
 
     system("pause");
     return 0;
