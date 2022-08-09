@@ -19,10 +19,16 @@ int main() {
     g.insert(1, 5, 7);
     g.remove(1, 5);*/
     cout << "图的节点数:" << g.numOfVer() << ",边数:" << g.numOfEdge() << endl;
+    cout << "----------------------------" << endl;
     g.dfs();
     g.bfs();
+    cout << "----------------------------" << endl;
     g.kruskal();
     g.prim(100);
+    cout << "---------非加权图-----------" << endl;
+    g.unweightedShortDistance(1, 189);
+    cout << "----------加权图------------" << endl;
+    g.dijkstra(1, 235);
 
     system("pause");
     return 0;

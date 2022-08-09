@@ -34,6 +34,12 @@ class adjListGraph : public graph<TypeOfVer, TypeOfEdge> {
     //求加权无向连通图的最小生成树
     void kruskal() const;                       // Kruskal算法
     void prim(const TypeOfEdge& noEdge) const;  // Prim算法
+    //单源最短路径
+    //非加权图的最短路径
+    void unweightedShortDistance(const TypeOfVer& start,
+                                 const TypeOfEdge& noEdge) const;
+    //加权图的最短路径
+    void dijkstra(const TypeOfVer& start, const TypeOfEdge& noEdge) const;
 
    private:
     struct edgeNode {
@@ -66,7 +72,116 @@ class adjListGraph : public graph<TypeOfVer, TypeOfEdge> {
                 return i;
     }
     void dfs(int start, bool visited[]) const;
+    void printPath(int start, int end, int prev[]) const;
 };
+
+template <class TypeOfVer, class TypeOfEdge>
+void adjListGraph<TypeOfVer, TypeOfEdge>::dijkstra(
+    const TypeOfVer& start,
+    const TypeOfEdge& noEdge) const {
+    TypeOfEdge* distance = new TypeOfEdge[this->Vers];
+    int* prev = new int[this->Vers];
+    bool* known = new bool[this->Vers];
+    int i, u, sNo, j;
+    TypeOfEdge min;
+    edgeNode* p;
+
+    //初始化
+    for (i = 0; i < this->Vers; ++i) {
+        distance[i] = noEdge;
+        known[i] = false;
+    }
+
+    sNo = find(start);
+    distance[sNo] = 0;
+    prev[sNo] = sNo;
+    for (i = 0; i < this->Vers; ++i) {
+        min = noEdge;
+        //寻找具有最短距离的节点
+        for (j = 0; j < this->Vers; ++j)
+            if (known[j] == false && distance[j] < min) {
+                u = j;
+                min = distance[j];
+            }
+        known[u] = true;  //将u放入S
+        p = verList[u].head;
+        while (p) {  //更新u的邻接点距离
+            if (known[p->end] == false &&
+                distance[u] + p->weight < distance[p->end]) {
+                distance[p->end] = distance[u] + p->weight;
+                prev[p->end] = u;
+            }
+            p = p->next;
+        }
+    }
+
+    for (i = 0; i < this->Vers; ++i) {
+        std::cout << "从" << start << "到" << verList[i].ver << "的最短路径为:";
+        printPath(sNo, i, prev);
+        std::cout << " 长度为:" << distance[i] << std::endl;
+    }
+    delete[] distance;
+    delete[] prev;
+}
+
+template <class TypeOfVer, class TypeOfEdge>
+void adjListGraph<TypeOfVer, TypeOfEdge>::unweightedShortDistance(
+    //实质就是广度优先搜索
+    const TypeOfVer& start,
+    const TypeOfEdge& noEdge) const {
+    TypeOfEdge* distance = new TypeOfEdge[this->Vers];
+    int* prev = new int[this->Vers];
+    int u, i, sNo;
+    edgeNode* p;
+    std::queue<int> q;
+
+    //初始化
+    for (i = 0; i < this->Vers; ++i)
+        distance[i] = noEdge;
+
+    //寻找起始节点的编号
+    sNo = find(start);
+
+    //寻找最短路径
+    distance[sNo] = 0;
+    prev[sNo] = sNo;
+    q.push(sNo);
+    while (!q.empty()) {
+        u = q.front();
+        q.pop();
+        p = verList[u].head;
+        while (p) {
+            if (distance[p->end] == noEdge) {
+                distance[p->end] = distance[u] + 1;
+                prev[p->end] = u;
+                q.push(p->end);
+            }
+            p = p->next;
+        }
+    }
+
+    //输出最短路径
+    for (i = 0; i < this->Vers; ++i) {
+        std::cout << "从" << start << "到" << verList[i].ver
+                  << "的最短路径为:" << std::endl;
+        printPath(sNo, i, prev);
+        std::cout << std::endl;
+    }
+    delete[] distance;
+    delete[] prev;
+}
+
+template <class TypeOfVer, class TypeOfEdge>
+void adjListGraph<TypeOfVer, TypeOfEdge>::printPath(int start,
+                                                    int end,
+                                                    int prev[]) const {
+    if (start == end) {
+        std::cout << verList[start].ver;
+        return;
+    }
+    printPath(start, prev[end], prev);
+    std::cout << "->" << verList[end].ver;
+}
 
 template <class TypeOfVer, class TypeOfEdge>
 void adjListGraph<TypeOfVer, TypeOfEdge>::prim(const TypeOfEdge& noEdge) const {
@@ -85,7 +200,7 @@ void adjListGraph<TypeOfVer, TypeOfEdge>::prim(const TypeOfEdge& noEdge) const {
     }
 
     start = 0;  // 0作为第一个加入生成树的节点
-    std::cout << "此图的最小生成树为:\n";
+    std::cout << "此图的最小生成树(Prim)为:\n";
     for (i = 1; i < this->Vers; ++i) {
         edgeNode* p = verList[start].head;
         while (p) {
@@ -130,7 +245,7 @@ void adjListGraph<TypeOfVer, TypeOfEdge>::kruskal() const {
                 q.push(e);
             }
 
-    std::cout << "此图的最小生成树为:\n";
+    std::cout << "此图的最小生成树(Kruskal)为:\n";
     for (i = 1; i < this->Vers;) {
         e = q.top();
         q.pop();
