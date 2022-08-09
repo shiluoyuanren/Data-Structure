@@ -40,6 +40,7 @@ class adjListGraph : public graph<TypeOfVer, TypeOfEdge> {
                                  const TypeOfEdge& noEdge) const;
     //加权图的最短路径
     void dijkstra(const TypeOfVer& start, const TypeOfEdge& noEdge) const;
+    void topSort() const;  //拓扑排序
 
    private:
     struct edgeNode {
@@ -74,6 +75,37 @@ class adjListGraph : public graph<TypeOfVer, TypeOfEdge> {
     void dfs(int start, bool visited[]) const;
     void printPath(int start, int end, int prev[]) const;
 };
+
+template <class TypeOfVer, class TypeOfEdge>
+void adjListGraph<TypeOfVer, TypeOfEdge>::topSort() const {
+    //实质是广度优先搜索,注意只有有向无环图才有拓扑序列!
+    std::queue<int> q;
+    int u, i;
+    edgeNode* p;
+    int* inDegree = new int[this->Vers];
+    for (i = 0; i < this->Vers; ++i)
+        inDegree[i] = 0;  //初始化每个节点的入度
+    for (i = 0; i < this->Vers; ++i)
+        for (p = verList[i].head; p != NULL; p = p->next)
+            ++inDegree[p->end];  //计算每个节点的入度
+    for (i = 0; i < this->Vers; ++i)
+        if (inDegree[i] == 0) {
+            q.push(i);  //将入度为0的节点入队
+            break;
+        }
+
+    std::cout << "拓扑序列为:" << std::endl;
+    while (!q.empty()) {
+        u = q.front();
+        q.pop();
+        for (p = verList[u].head; p != NULL; p = p->next)
+            if (--inDegree[p->end] == 0)
+                q.push(p->end);
+        std::cout << verList[u].ver << " ";
+    }
+    std::cout << std::endl;
+    delete[] inDegree;
+}
 
 template <class TypeOfVer, class TypeOfEdge>
 void adjListGraph<TypeOfVer, TypeOfEdge>::dijkstra(
@@ -118,7 +150,7 @@ void adjListGraph<TypeOfVer, TypeOfEdge>::dijkstra(
     for (i = 0; i < this->Vers; ++i) {
         std::cout << "从" << start << "到" << verList[i].ver << "的最短路径为:";
         printPath(sNo, i, prev);
-        std::cout << " 长度为:" << distance[i] << std::endl;
+        std::cout << "\t长度为:" << distance[i] << std::endl;
     }
     delete[] distance;
     delete[] prev;
@@ -354,8 +386,8 @@ void adjListGraph<TypeOfVer, TypeOfEdge>::insert(const TypeOfVer& x,
     int u = find(x), v = find(y);
     if (!exist(x, y)) {
         verList[u].head = new edgeNode(v, w, verList[u].head);
-        //无向图添加此项
-        verList[v].head = new edgeNode(u, w, verList[v].head);
+        // //无向图添加此项
+        // verList[v].head = new edgeNode(u, w, verList[v].head);
         ++this->Edges;
     }
 }
@@ -379,18 +411,18 @@ void adjListGraph<TypeOfVer, TypeOfEdge>::remove(const TypeOfVer& x,
         p = tpl->next;
         delete tpl;
     }
-    //无向图添加此项
-    edgeNode* q = verList[v].head;
-    if (q->end == u) {
-        verList[v].head = q->next;
-        delete q;
-    } else {
-        while (q->next->end != u)
-            q = q->next;
-        edgeNode* tpl = q->next;
-        q = tpl->next;
-        delete tpl;
-    }
+    // //无向图添加此项
+    // edgeNode* q = verList[v].head;
+    // if (q->end == u) {
+    //     verList[v].head = q->next;
+    //     delete q;
+    // } else {
+    //     while (q->next->end != u)
+    //         q = q->next;
+    //     edgeNode* tpl = q->next;
+    //     q = tpl->next;
+    //     delete tpl;
+    // }
     --this->Edges;
 }
 
