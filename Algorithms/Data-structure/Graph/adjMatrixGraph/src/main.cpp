@@ -3,11 +3,14 @@
 using namespace std;
 
 int main() {
-    adjMatrixGraph<char, int> g(10, "abcdefghij", -2);
-    g.insert('a', 'f', 56);
-    g.insert('b', 'j', 34);
-    g.remove('b', 'j');
-    cout << "图的节点数:" << g.numOfVer() << ",边数:" << g.numOfEdge() << endl;
+    int a[] = {0, 1, 2};
+    adjMatrixGraph<int, int> g(3, a, 255);
+    g.insert(0, 2, 5);
+    g.insert(0, 1, 8);
+    g.insert(2, 1, 2);
+    g.insert(2, 0, 6);
+    g.insert(1, 0, 3);
+    g.floyd();
 
     system("pause");
     return 0;

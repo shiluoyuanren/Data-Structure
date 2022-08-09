@@ -28,6 +28,7 @@ class adjMatrixGraph : public graph<TypeOfVer, TypeOfEdge> {
     void insert(const TypeOfVer& x, const TypeOfVer& y, const TypeOfEdge& w);
     void remove(const TypeOfVer& x, const TypeOfVer& y);
     bool exist(const TypeOfVer& x, const TypeOfVer& y) const;
+    void floyd() const;  //所有顶点对的最短距离
 
    private:
     TypeOfEdge** edge;  //存放邻接矩阵
@@ -39,6 +40,52 @@ class adjMatrixGraph : public graph<TypeOfVer, TypeOfEdge> {
                 return i;
     }
 };
+
+template <class TypeOfVer, class TypeOfEdge>
+void adjMatrixGraph<TypeOfVer, TypeOfEdge>::floyd() const {
+    TypeOfEdge** distance = new TypeOfEdge*[this->Vers];
+    int** prev = new int*[this->Vers];
+    int i, j, k;
+
+    for (i = 0; i < this->Vers; ++i) {
+        distance[i] = new TypeOfEdge[this->Vers];
+        prev[i] = new int[this->Vers];
+        for (j = 0; j < this->Vers; ++j) {
+            distance[i][j] = edge[i][j];
+            prev[i][j] = (edge[i][j] != noEdge) ? i : -1;
+        }
+    }
+
+    // k为中间节点
+    for (k = 0; k < this->Vers; ++k)
+        for (i = 0; i < this->Vers; ++i)
+            for (j = 0; j < this->Vers; ++j)
+                if (distance[i][k] + distance[k][j] < distance[i][j]) {
+                    distance[i][j] = distance[k][j] + distance[i][k];
+                    prev[i][j] = prev[k][j];
+                }
+
+    std::cout << "最短路径长度:" << std::endl;
+    for (i = 0; i < this->Vers; ++i) {
+        for (j = 0; j < this->Vers; ++j)
+            std::cout << distance[i][j] << " ";
+        std::cout << std::endl;
+    }
+
+    std::cout << "\n最短路径:" << std::endl;
+    for (i = 0; i < this->Vers; ++i) {
+        for (j = 0; j < this->Vers; ++j)
+            std::cout << prev[i][j] << " ";
+        std::cout << std::endl;
+    }
+    for (i = 0; i < this->Vers; ++i) {
+        delete[] distance[i];
+        delete[] prev[i];
+    }
+    std::cout << std::endl;
+    delete[] distance;
+    delete[] prev;
+}
 
 template <class TypeOfVer, class TypeOfEdge>
 adjMatrixGraph<TypeOfVer, TypeOfEdge>::adjMatrixGraph(
